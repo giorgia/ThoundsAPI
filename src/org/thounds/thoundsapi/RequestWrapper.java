@@ -44,8 +44,7 @@ public class RequestWrapper {
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope(null, 80, "thounds","Digest"),
 					new UsernamePasswordCredentials(USERNAME, PASSWORD));
-		HttpResponse responce = client.execute(request);
-		
+		HttpResponse responce = client.execute(request);		
 		client.getConnectionManager().shutdown();
 		return responce;
 	}
@@ -102,23 +101,22 @@ public class RequestWrapper {
 
 	public static UserWrapper loadUserProfile() throws ClientProtocolException,
 			URISyntaxException, IOException, JSONException {
-		DefaultHttpClient client = getHttpClient(true);
+		
 		HttpGet httpget = new HttpGet();
 		httpget.addHeader("Accept", "application/json");
 		httpget.setURI(new URI(HOST + PROFILE_PATH));
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,true);
 		return new UserWrapper(httpResponseToJSONObject(response));
 	}
 
 	public static UserWrapper loadGenericUserProfile(int userId)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
-		DefaultHttpClient client = getHttpClient(true);
 		HttpGet httpget = new HttpGet();
 		httpget.addHeader("Accept", "application/json");
 		httpget.setURI(new URI(HOST + USERS_PATH + "/"
 				+ Integer.toString(userId)));
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,true);
 		return new UserWrapper(httpResponseToJSONObject(response));
 	}
 
@@ -130,16 +128,15 @@ public class RequestWrapper {
 	public static BandWrapper loadUserBand(int page, int perPage)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
-		DefaultHttpClient client = getHttpClient(true);
 
-		StringBuilder uriBuilder = new StringBuilder(HOST + PROFILE_PATH + "/"
+		StringBuilder uriBuilder = new StringBuilder(HOST + PROFILE_PATH 
 				+ BAND_PATH);
 		uriBuilder.append("?page=" + Integer.toString(page));
 		uriBuilder.append("&per_page=" + Integer.toString(perPage));
 
 		HttpGet httpget = new HttpGet(uriBuilder.toString());
 		httpget.addHeader("Accept", "application/json");
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,true);
 		return new BandWrapper(httpResponseToJSONObject(response));
 	}
 
@@ -152,7 +149,6 @@ public class RequestWrapper {
 	public static BandWrapper loadGenericUserBand(int userId, int page,
 			int perPage) throws ClientProtocolException, URISyntaxException,
 			IOException, JSONException {
-		DefaultHttpClient client = getHttpClient(true);
 
 		StringBuilder uriBuilder = new StringBuilder(HOST + USERS_PATH + "/"
 				+ Integer.toString(userId) + BAND_PATH);
@@ -161,7 +157,7 @@ public class RequestWrapper {
 
 		HttpGet httpget = new HttpGet(uriBuilder.toString());
 		httpget.addHeader("Accept", "application/json");
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,true);
 		return new BandWrapper(httpResponseToJSONObject(response));
 	}
 
@@ -179,10 +175,6 @@ public class RequestWrapper {
 		userFieldJSON.put("tags", tags);
 		userJSON.put("user", userFieldJSON);
 
-		// -------------------------------------------
-
-		DefaultHttpClient client = getHttpClient(false);
-
 		HttpPost httppost = new HttpPost();
 		httppost.setURI(new URI(HOST + USERS_PATH));
 		httppost.addHeader("Accept", "application/json");
@@ -190,7 +182,7 @@ public class RequestWrapper {
 		StringEntity se = new StringEntity(userJSON.toString());
 		httppost.setEntity(se);
 
-		HttpResponse response = client.execute(httppost);
+		HttpResponse response = executeHttpRequest(httppost,false);
 
 		Log.e("PROVA", response.getStatusLine().toString());
 		return (response.getStatusLine().getStatusCode() == 201);
@@ -204,8 +196,6 @@ public class RequestWrapper {
 	public static HomeWrapper loadHome(int page, int perPage)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
-		DefaultHttpClient client = getHttpClient(true);
-
 		StringBuilder uriBuilder = new StringBuilder(HOST + HOME_PATH);
 		uriBuilder.append("?page=" + Integer.toString(page));
 		uriBuilder.append("&per_page=" + Integer.toString(perPage));
@@ -213,7 +203,7 @@ public class RequestWrapper {
 		HttpGet httpget = new HttpGet(uriBuilder.toString());
 		httpget.addHeader("Accept", "application/json");
 
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,true);
 		return new HomeWrapper(httpResponseToJSONObject(response));
 	}
 
@@ -221,14 +211,12 @@ public class RequestWrapper {
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
 
-		DefaultHttpClient client = getHttpClient(true);
-
 		HttpPost httppost = new HttpPost();
 		httppost.setURI(new URI(HOST + USERS_PATH + "/"
-				+ Integer.toString(userId) + "/" + FRIENDSHIPS_PATH));
+				+ Integer.toString(userId) + FRIENDSHIPS_PATH));
 		httppost.addHeader("Accept", "application/json");
 
-		HttpResponse response = client.execute(httppost);
+		HttpResponse response = executeHttpRequest(httppost,true);
 
 		Log.e("PROVA", response.getStatusLine().toString());
 		return (response.getStatusLine().getStatusCode() == 201);
@@ -238,68 +226,60 @@ public class RequestWrapper {
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
 
-		DefaultHttpClient client = getHttpClient(true);
-
 		HttpPut httpput = new HttpPut();
-		httpput.setURI(new URI(HOST + PROFILE_PATH + "/" + FRIENDSHIPS_PATH
+		httpput.setURI(new URI(HOST + PROFILE_PATH + FRIENDSHIPS_PATH
 				+ "/" + Integer.toString(friendshipId) + "?accept=true"));
 		httpput.addHeader("Accept", "application/json");
 		httpput.addHeader("Content-type", "application/json");
 
-		HttpResponse response = client.execute(httpput);
+		HttpResponse response = executeHttpRequest(httpput,true);
 	}
 
 	public static void refuseFriendship(int friendshipId)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
 
-		DefaultHttpClient client = getHttpClient(true);
-
 		HttpPut httpput = new HttpPut();
-		httpput.setURI(new URI(HOST + PROFILE_PATH + "/" + FRIENDSHIPS_PATH
+		httpput.setURI(new URI(HOST + PROFILE_PATH + FRIENDSHIPS_PATH
 				+ "/" + Integer.toString(friendshipId)));
 		httpput.addHeader("Accept", "application/json");
 		httpput.addHeader("Content-type", "application/json");
 
-		HttpResponse response = client.execute(httpput);
+		HttpResponse response = executeHttpRequest(httpput,true);
 	}
 
 	public static boolean removeUserFromBand(int userId)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
 
-		DefaultHttpClient client = getHttpClient(true);
-
 		HttpDelete httpdelete = new HttpDelete();
-		httpdelete.setURI(new URI(HOST + PROFILE_PATH + "/" + FRIENDSHIPS_PATH
+		httpdelete.setURI(new URI(HOST + PROFILE_PATH + FRIENDSHIPS_PATH
 				+ "/" + Integer.toString(userId)));
 		httpdelete.addHeader("Accept", "application/json");
 		httpdelete.addHeader("Content-type", "application/json");
 
-		HttpResponse response = client.execute(httpdelete);
+		HttpResponse response = executeHttpRequest(httpdelete,true);
 		return (response.getStatusLine().getStatusCode() == 200);
 	}
 
 	public static ThoundWrapper loadThounds(int thoundId)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
-		DefaultHttpClient client = getHttpClient(isLogged);
 		HttpGet httpget = new HttpGet();
 		httpget.addHeader("Accept", "application/json");
 		httpget.setURI(new URI(HOST + THOUNDS_PATH + "/"
 				+ Integer.toString(thoundId)));
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,isLogged);
 		return new ThoundWrapper(httpResponseToJSONObject(response));
 	}
 
 	public static ThoundWrapper loadThounds(String thoundHash)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
-		DefaultHttpClient client = getHttpClient(isLogged);
 		HttpGet httpget = new HttpGet();
 		httpget.addHeader("Accept", "application/json");
 		httpget.setURI(new URI(HOST + THOUNDS_PATH + "/" + thoundHash));
-		HttpResponse response = client.execute(httpget);
+		HttpResponse response = executeHttpRequest(httpget,isLogged);
 		return new ThoundWrapper(httpResponseToJSONObject(response));
 	}
 
@@ -307,15 +287,13 @@ public class RequestWrapper {
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
 
-		DefaultHttpClient client = getHttpClient(true);
-
 		HttpDelete httpdelete = new HttpDelete();
 		httpdelete.setURI(new URI(HOST + THOUNDS_PATH
 				+ "/" + Integer.toString(thoundId)));
 		httpdelete.addHeader("Accept", "application/json");
 		httpdelete.addHeader("Content-type", "application/json");
 
-		HttpResponse response = client.execute(httpdelete);
+		HttpResponse response = executeHttpRequest(httpdelete,true);
 		return (response.getStatusLine().getStatusCode() == 200);
 	}
 }
